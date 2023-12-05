@@ -2,10 +2,17 @@
 
 It happens to all of us. We (or somebody else) copy a link from GitHub, but forget to use a permalink.
 An arbitrary amount of commits later, we stumble on this link, and scramble to find the lines being linked.
+Especially annoying if the file was removed.
 
-It shouldn't be too hard (🤞) to take such a link, plus a date, and give us a permalink for it with the commit hash at that time.
+Use this to locate the last commit on the main branch before the date of the message you found the link in.
+
+## [inwerpsel.github.io/permalinkify](https://inwerpsel.github.io/permalinkify)
 
 Todo:
-* Implement this by fetching the right data from the GitHub API (or remove this repo if somebody has already made this)
-* Bonus points: figure out where those lines are in the latest version. If the corresponding text object never changed,
+* Show multiple with dates
+* Use date picker (perhaps with datalist of commit info)
+* As a bookmarklet
+* Support other branches (probably hard because the commit endpoint that is used only works on the main branch)
+* Attempt to handle change of main branch (could be hard for same reason)
+* If lines changed, figure out where they are in the latest version. If the corresponding text object never changed,
 it should be possible to get this from the repository, but probably not with the GitHub API.
