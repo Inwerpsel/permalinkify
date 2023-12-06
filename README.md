@@ -24,10 +24,13 @@ where it can find a timestamp inside of the text content or one of the attribute
 You can try changing the date value but it's still tricky.
 Will be resolved by showing a list of commits.
 
+## Examples
+[July 2018 issue comment on the React repo](https://github.com/facebook/react/issues/13206#issuecomment-404950040)
+
+
 ## Todo
 * Show multiple with dates
 * Use date picker (perhaps with datalist of commit info)
 * Support other branches (probably hard because the commit endpoint that is used only works on the main branch)
-* Attempt to handle change of main branch (could be hard for same reason, but for current functionality it might not be a problem)
 * If lines changed, figure out where they are in the latest version. If the corresponding text object never changed,
 it should be possible to get this from the repository, but probably not with the GitHub API.
