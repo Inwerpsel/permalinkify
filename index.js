@@ -7,8 +7,8 @@ const urlParams = new URLSearchParams(window.location.search);
 // Ad hoc micro inline framework.
 function el(tagname, parent = root, onCreate = noop) {
   const el = document.createElement(tagname);
-  parent.appendChild(el);
   onCreate(el);
+  parent.appendChild(el);
 
   return el;
 }
@@ -49,7 +49,7 @@ function historyEntry({ date, branchLink, permaLink }) {
 }
 
 const outputEl = el('code', outputDiv, (el) => {
-  el.style.cssText = `min-width: 200px; min-height: 100px;`;
+  el.style.minWidth = '200px';
 });
 const urlInput = input(controlsDiv, (el) => {
   const hash = window.location.hash;
@@ -144,3 +144,5 @@ async function findCommitsAroundDate(date) {
   const path = `${username}/${repo}/commits?until=${messageDate.toISOString()})`;
   return await callGithub(path);
 }
+
+search();
