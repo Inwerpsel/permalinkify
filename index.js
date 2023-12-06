@@ -94,7 +94,7 @@ const githubRegex =
 
 const pathRegex = /blob\/([^\/]*)\/(.*)/;
 
-let lastResult;
+let lastResult, lastLink;
 
 async function callGithub(path) {
   const url = `https://api.github.com/repos/${path}`;
@@ -108,8 +108,8 @@ async function search() {
   const [, branch] = pathRegex.exec(path);
   const date = dateInput.value;
   lastResult && lastResult.parentNode.removeChild(lastResult);
-  const output = await findCommitsAroundDate(username, repo, new Date(date));
-  if (output.length === 0) {
+  const refs = await findCommitsAroundDate(username, repo, new Date(date));
+  if (refs.length === 0) {
     return;
   }
   const {
@@ -118,8 +118,9 @@ async function search() {
       committer: { name, date: commitDate },
       message,
     },
-  } = output[0];
+  } = refs[0];
   const permaLink = branchLink.replace(branch, sha);
+  lastLink = permaLink;
 
   // const formatted = JSON.stringify(last, null, 4);
   const wrap = el('div', outputEl);
@@ -159,4 +160,9 @@ async function findCommitsAroundDate(username, repo, date) {
   return callGithub(path);
 }
 
-dateInput.value && urlInput.value && search();
+if (dateInput.value && urlInput.value) {}
+ search().then(() => {
+  if (urlParams.get('autoopen') === '1' && lastLink) {
+    window.location.href=lastLink
+  }
+ })

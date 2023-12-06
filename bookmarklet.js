@@ -63,6 +63,6 @@ javascript: (() => {
   const date = findDatetimeLastEdit(link) || findDatetime(link) || findDateTimeFallback(link) || '2023-11-02T18:59:25Z';
 
   window.open(
-    `https://inwerpsel.github.io/permalinkify?date=${date}&url=${link.href}`
+    `https://inwerpsel.github.io/permalinkify?autoopen=1&date=${date}&url=${link.href}`
   );
 })();
