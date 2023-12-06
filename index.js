@@ -1,3 +1,4 @@
+const localStorageKey = 'permalinkify:history';
 const FORMAT = 'YY-MM-DDTHH:MM:SSZ';
 const daysBefore = 5;
 const root = document.getElementById('root');
@@ -27,11 +28,21 @@ const outputDiv = el('div', root);
 el('h2', outputDiv, (el) => (el.textContent = 'Permalink'));
 const historyDiv = el('div', root);
 
-el('h2', historyDiv, (el) => (el.textContent = 'Search history'));
+el('h2', historyDiv, (el) => (el.textContent = 'Last searches'));
+const latestHistoryEl = el('ul', historyDiv);
+el('h2', historyDiv, (el) => (el.textContent = 'Older searches'));
 const historyEl = el('ul', historyDiv);
+el('button', historyEl, el => {
+  el.textContent = 'Clear history';
+  el.onclick = () => {
+    if (confirm('Clear all history?')) {
+      localStorage.removeItem(localStorageKey);
+    }
+  }
+})
 
-function historyEntry({ date, branchLink, permaLink }) {
-  let entry = el('code', el('li', historyEl));
+function historyEntry({ root = historyEl, date, branchLink, permaLink }) {
+  let entry = el('code', el('li', root));
   entry.textContent = `${date} --- ${branchLink} ---`;
   el('button', entry, (el) => {
     el.textContent = 'restore';
@@ -71,14 +82,15 @@ const submitButton = el('button', controlsDiv, (el) => {
 });
 
 const history = JSON.parse(
-  localStorage.getItem('permalinkify:history') || '[]'
+  localStorage.getItem(localStorageKey) || '[]'
 );
+
 for (const props of history) {
   historyEntry(props);
 }
 
 const githubRegex =
-  /https\:\/\/github.com\/([^\/]+)\/([^\/]+)\/(.*)#L(\d+)(\-L(\d+))?/;
+  /https\:\/\/github\.com\/([^\/]+)\/([^\/]+)\/([^#]*)(#L(\d+)(-L(\d+))?)?/;
 
 const pathRegex = /blob\/([^\/]*)\/(.*)/;
 
@@ -92,12 +104,11 @@ async function callGithub(path) {
 
 async function search() {
   const branchLink = urlInput.value;
-  const [, username, repo, path, startline, , endline] =
-    githubRegex.exec(branchLink);
+  const [, username, repo, path, , startline, , endline] = githubRegex.exec(branchLink);
   const [, branch] = pathRegex.exec(path);
   const date = dateInput.value;
   lastResult && lastResult.parentNode.removeChild(lastResult);
-  const output = await findCommitsAroundDate(new Date(date));
+  const output = await findCommitsAroundDate(username, repo, new Date(date));
   if (output.length === 0) {
     return;
   }
@@ -131,20 +142,17 @@ async function search() {
     return;
 
   history.push({ date, branchLink, permaLink, sha });
-  localStorage.setItem('permalinkify:history', JSON.stringify(history));
-  historyEntry({ date, branchLink, permaLink });
+  history.sort((a, b) => a.branchLink.localeCompare(b.branchLink));
+  localStorage.setItem(localStorageKey, JSON.stringify(history));
+  historyEntry({ root: latestHistoryEl,date, branchLink, permaLink });
 }
 
-async function findCommitsAroundDate(date) {
+async function findCommitsAroundDate(username, repo, date) {
   // For now this uses a hard coded range around the date.
   // If the message in which the link was posted has a minute precision and accurate post date,
   // it means we should look for commits that were authored strictly before that date.
 
   // If there's less precision we should look for anything before the next day.
-
-  const [, username, repo, filePath, startline, , endline] = githubRegex.exec(
-    urlInput.value
-  );
   const messageDate = new Date(date);
   messageDate.setDate(messageDate.getDate());
   const path = `${username}/${repo}/commits?until=${messageDate.toISOString()})`;
