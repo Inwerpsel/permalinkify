@@ -27,7 +27,7 @@ const outputDiv = el('div', root);
 el('h2', outputDiv, (el) => (el.textContent = 'Permalink'));
 const historyDiv = el('div', root);
 
-el('h2', historyDiv, (el) => (el.textContent = 'History'));
+el('h2', historyDiv, (el) => (el.textContent = 'Search history'));
 const historyEl = el('ul', historyDiv);
 
 function historyEntry({ date, branchLink, permaLink }) {
@@ -62,7 +62,7 @@ const urlInput = input(controlsDiv, (el) => {
   // });
 });
 const dateInput = input(controlsDiv);
-dateInput.value = urlParams.get('date') || '2023-11-02T18:59:25.000Z';
+dateInput.value = urlParams.get('date');
 dateInput.style.minWidth = '100%';
 
 const submitButton = el('button', controlsDiv, (el) => {
@@ -96,19 +96,25 @@ async function search() {
     githubRegex.exec(branchLink);
   const [, branch] = pathRegex.exec(path);
   const date = dateInput.value;
+  lastResult && lastResult.parentNode.removeChild(lastResult);
   const output = await findCommitsAroundDate(new Date(date));
   if (output.length === 0) {
     return;
   }
-  const sha = output[0].sha;
+  const {
+    sha,
+    commit: {
+      committer: { name, date: commitDate },
+      message,
+    },
+  } = output[0];
   const permaLink = branchLink.replace(branch, sha);
 
   // const formatted = JSON.stringify(last, null, 4);
-  lastResult && lastResult.parentNode.removeChild(lastResult);
   const wrap = el('div', outputEl);
   lastResult = wrap;
   el('span', wrap, (el) => {
-    el.textContent = date;
+    el.textContent = `${commitDate} ${name} --- ${message}`;
     el.title = branchLink;
   });
   const anchor = el('a', wrap);
@@ -142,7 +148,7 @@ async function findCommitsAroundDate(date) {
   const messageDate = new Date(date);
   messageDate.setDate(messageDate.getDate());
   const path = `${username}/${repo}/commits?until=${messageDate.toISOString()})`;
-  return await callGithub(path);
+  return callGithub(path);
 }
 
-search();
+dateInput.value && urlInput.value && search();

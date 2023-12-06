@@ -1,4 +1,4 @@
-(() => {
+javascript: (() => {
   const datetimeReg = /\d\d\d\d-\d\d-\d\d(T\d\d:\d\d:\d\d)?/;
   const selection = window.getSelection();
 
@@ -12,6 +12,19 @@
   const links = container.querySelectorAll(
     'a[href^="https://github.com/"][href*="/blob/"]'
   );
+
+  function findDatetimeLastEdit(node) {
+    const timeEl = node.querySelector('.js-comment-edit-history menu relative-time');
+    if (timeEl) {
+        return timeEl.datetime;
+    }
+
+    if (node === document.body) {
+      return;
+    }
+    return findDatetimeLastEdit(node.parentNode);
+  }
+
   function findDatetime(node) {
     const timeEl = node.querySelector('relative-time');
     if (timeEl) {
@@ -47,7 +60,8 @@
   if (!link) {
     return;
   }
-  const date = findDatetime(link) || findDateTimeFallback(link) || '2023-11-02T18:59:25Z';
+  const date = findDatetimeLastEdit(link) || findDatetime(link) || findDateTimeFallback(link) || '2023-11-02T18:59:25Z';
+
   window.open(
     `https://inwerpsel.github.io/permalinkify?date=${date}&url=${link.href}`
   );
